@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var userId;
+
+			$(function() {
+
+				//用户信息回显
+				loadUser();
+
+			})
+
+			//用户信息回显
+			var loadUser = function() {
+
+				$.get(baseUrl + "/user/getUserInfo", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var user = JSON.parse(res.msg)
+
+						$("#realname").append(user.realname)
+
+						//初始化用户id
+						userId = user.id
+
+						//加载角色表格数据
+						loadData(userId);
+					} else {
+						back()
+					}
+
+				})
+			}
+
+			//加载表格数据
+			var loadData = function(userId) {
+
+				//加载用户已授权角色列表
+				table.render({
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/user/findRoleList',
+					width: 1100,
+					method: 'get',
+					where: {
+						userId: userId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'roleName',
+							title: '角色名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'roleDesc',
+							title: '角色描述',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					]
+				});
+
+				//加载用户未授权角色列表
+				table.render({
+					elem: '#othertable', //绑定表格的id
+					url: baseUrl + '/user/findOtherRoleList',
+					width: 1100,
+					method: 'get',
+					where: {
+						userId: userId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'roleName',
+							title: '角色名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'roleDesc',
+							title: '角色描述',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#otheroperate'
+						}]
+					]
+				});
+
+			}
+
+			//已授权角色列表表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				var role = obj.data;
+
+				//删除角色
+				if(obj.event === 'deleteRole') {
+
+					layer.confirm('确定为当前用户删除【' + role.roleName + '】的这个角色吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/user/deleteRole", {
+							userId:userId,
+							roleId:role.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+								table.reload('othertable')
+							}
+						})
+
+					});
+				}
+
+			});
+
+			//未授权角色列表表格监听事件
+			table.on('tool(othertable)', function(obj) {
+
+				var role = obj.data;
+
+				//增加该角色
+				if(obj.event === 'addRole') {
+
+					layer.confirm('确定为当前用户增加【' + role.roleName + '】这个角色吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/user/addRole", {
+							userId:userId,
+							roleId:role.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+								table.reload('othertable')
+							}
+						})
+
+					});
+				}
+
+			});
+
+			var back = function() {
+				window.location = "user.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">用户管理页面</h1>
+
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<h3 style="margin: 50px;" id="realname">当前用户姓名：</h3>
+
+			<h1>已授权角色列表</h1>
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="deleteRole" name="deleteRole">删除</button>
+			</script>
+
+			<h1>未授权角色列表</h1>
+			<table id="othertable" lay-filter="othertable"></table>
+			<script type="text/html" id="otheroperate">
+				<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="addRole" name="addRole">增加该角色</button>
+			</script>
+
+		</center>
+
+	</body>
+
+</html>

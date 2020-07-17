@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//初始化表单
+				form.render();
+
+			})
+
+			//提交菜单数据
+			var sub = function() {
+
+				var menuName = $("#menuName").val()
+				var menuDesc = $("#menuDesc").val()
+				var menuPage = $("#menuPage").val()
+
+				var errors = 0;
+
+				//校验菜单名称
+				if(errors == 0 && menuName == '') {
+					layer.alert("请输入菜单名称")
+					errors++;
+				}
+
+				//校验菜单描述
+				if(errors == 0 && menuDesc == '') {
+					layer.alert("请输入菜单描述")
+					errors++;
+				}
+
+				//校验菜单页面，是否以.html结尾
+				if(errors == 0) {
+
+					if(menuPage == '') {
+						layer.alert("请输入菜单页面")
+						errors++;
+					} else {
+
+						//.html正则表达式
+						var regex = /^[a-zA-Z]{1,}\.html$/
+
+						if(regex.test(menuPage) == false) {
+
+							layer.alert("菜单页面必须以.html结尾，请重新输入")
+							errors++;
+						}
+					}
+
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交菜单信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/menu/save", {
+							menuName: menuName,
+							menuPage: menuPage,
+							menuDesc: menuDesc
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "menu.html"
+			}
+
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>菜单新增页面</h1>
+
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+				<!--菜单名称-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">菜单名称</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入菜单名称" id="menuName" />
+					</div>
+				</div>
+
+				<!--菜单描述-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">菜单描述</label>
+
+					<div class="layui-input-block">
+						<textarea class="layui-textarea" id="menuDesc"></textarea>
+					</div>
+				</div>
+
+				<!--菜单页面-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">菜单页面</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入菜单页面" id="menuPage" />
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>

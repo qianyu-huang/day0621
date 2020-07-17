@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//加载角色信息表格数据
+				loadData();
+
+			})
+
+			//加载表格数据
+			var loadData = function(buttonArray) {
+
+				//加载角色信息表格数据
+				table.render({
+					done:function () {
+						//获取按钮权限
+						getButtonList()
+					},
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/role/findVo',
+					width: 1100,
+					method: 'get',
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'roleName',
+							title: '角色名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'roleDesc',
+							title: '角色描述',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuInfo',
+							title: '菜单列表',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					]
+				});
+			}
+
+			//进入新增角色页面
+			var add = function() {
+
+				window.location = "role_add.html"
+			}
+
+			//表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				var role = obj.data;
+
+				//进入菜单授权页面
+				if(obj.event === 'setMenu') {
+
+					$.post(baseUrl + "/role/saveRoleInfo", {
+						id: role.id
+					}, function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = "role_setMenu.html"
+						} else {
+
+							layer.alert(res.msg)
+						}
+					})
+				}
+
+				//进入修改页面	
+				if(obj.event === 'update') {
+
+					$.post(baseUrl + "/role/toUpdate", {
+						id: role.id
+					}, function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = "role_update.html"
+						} else {
+
+							layer.alert(res.msg)
+						}
+					})
+				}
+
+				//删除操作
+				if(obj.event === 'delete') {
+
+					layer.confirm('确认删除【' + role.roleName + '】这个角色吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/role/delete", {
+							id: role.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+							}
+						})
+
+					});
+				}
+
+			});
+			
+			//返回主页面
+			var back = function(){
+				window.location = "main.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">角色管理页面</h1>
+
+			<button disabled="disabled" class="layui-btn-disabled layui-btn" type="button" onclick="add()" name="save">新增</button>
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button  disabled="disabled" class="layui-btn-disabled layui-btn layui-btn-warm layui-btn-xs" lay-event="setMenu" name="setMenu">菜单授权</button>
+				<button  disabled="disabled" class="layui-btn-disabled layui-btn layui-btn-normal layui-btn-xs" lay-event="update" name="update">修改</button>
+				<button  disabled="disabled" class="layui-btn-disabled layui-btn layui-btn-danger layui-btn-xs" lay-event="delete" name="delete">删除</button>
+			</script>
+		</center>
+
+	</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var roleId;
+			var menuId;
+			var roleName;
+			var menuName;
+
+			$(function() {
+
+				//回显角色
+				loadRole();
+
+			})
+
+			//回显角色
+			var loadRole = function() {
+
+				$.get(baseUrl + "/role/getRole", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var role = JSON.parse(res.msg)
+
+						$("#roleName").append(role.roleName)
+
+						//初始化角色id
+						roleId = role.id
+
+						roleName = role.roleName
+
+						//回显菜单
+						loadMenu()
+					} else {
+						back()
+					}
+
+				})
+			}
+
+			//回显菜单
+			var loadMenu = function() {
+
+				$.get(baseUrl + "/role/getMenu", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var menu = JSON.parse(res.msg)
+
+						$("#menuName").append(menu.menuName)
+
+						//初始化菜单id
+						menuId = menu.id
+
+						menuName = menu.menuName
+
+						//加载数据
+						loadData()
+					} else {
+						back()
+					}
+
+				})
+
+			}
+
+			//加载表格数据
+			var loadData = function(buttonArray) {
+
+				//加载已授权的按钮表格数据
+				table.render({
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/role/findButtonList',
+					width: 1100,
+					method: 'get',
+					where: {
+						roleId: roleId,
+						menuId: menuId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'buttonName',
+							title: '按钮名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'attrName',
+							title: '属性名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'buttonUrl',
+							title: '按钮url',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					]
+				});
+
+				//加载未授权的按钮表格数据
+				table.render({
+					elem: '#othertable', //绑定表格的id
+					url: baseUrl + '/role/findOtherButtonList',
+					width: 1100,
+					method: 'get',
+					where: {
+						roleId: roleId,
+						menuId: menuId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'buttonName',
+							title: '按钮名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'attrName',
+							title: '属性名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'buttonUrl',
+							title: '按钮url',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#otheroperate'
+						}]
+					]
+				});
+
+			}
+
+			//返回
+			var back = function() {
+
+				window.location = "role_setMenu.html"
+			}
+
+			//已授权按钮列表表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				var button = obj.data;
+
+				//删除按钮
+				if(obj.event === 'deleteButton') {
+
+					layer.confirm('确定为当前菜单删除【' + button.buttonName + '】这个按钮访问权限吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/role/deleteButton", {
+							roleId: roleId,
+							menuId: menuId,
+							buttonId: button.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+								table.reload('othertable')
+							}
+						})
+
+					});
+				}
+
+			});
+
+			//未授权菜单列表表格监听事件
+			table.on('tool(othertable)', function(obj) {
+
+				var button = obj.data;
+
+				//增加按钮
+				if(obj.event === 'addButton') {
+
+					layer.confirm('确定为当前菜单增加【' + button.buttonName + '】这个按钮访问权限吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/role/addButton", {
+							roleId: roleId,
+							menuId: menuId,
+							buttonId: button.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+								table.reload('othertable')
+							}
+						})
+
+					});
+				}
+
+			});
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">按钮授权页面</h1>
+
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<h1 id="roleName">当前角色名称：</h1>
+			<h1 id="menuName">当前菜单名称：</h1>
+
+			<h1>已授权按钮列表</h1>
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="deleteButton" name="deleteButton">删除</button>
+			</script>
+
+			<h1>未授权按钮列表</h1>
+			<table id="othertable" lay-filter="othertable"></table>
+			<script type="text/html" id="otheroperate">
+				<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="addButton" name="addButton">增加该按钮</button>
+			</script>
+
+		</center>
+
+	</body>
+
+</html>

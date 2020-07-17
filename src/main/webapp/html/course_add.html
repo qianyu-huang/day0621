@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//初始化表单
+				form.render();
+
+			})
+
+			//提交课程数据
+			var sub = function() {
+
+				var courseName = $("#courseName").val()
+				var courseNumber = $("#courseNumber").val()
+				var type = $(":radio:checked").val()
+
+				//				var type;
+				//				var typeArray = $("[name='type']");
+				//				for(var i = 0; i < typeArray.length; i++) {
+				//					if(typeArray[i].checked == true) {
+				//						type = typeArray[i].value
+				//					}
+				//				}
+
+				var errors = 0;
+
+				//校验课程名称
+				if(errors == 0 && courseName == '') {
+					layer.alert("请输入课程名称")
+					errors++;
+				}
+
+				//校验课程代码
+				if(errors == 0) {
+
+					if(courseNumber == '') {
+						layer.alert("请输入课程代码")
+						errors++;
+					} else {
+
+						if(courseNumber.length != 6) {
+							layer.alert("课程代码只能为6位数字，请重试")
+							errors++;
+						}
+					}
+
+				}
+
+				//校验课程类型
+				if(errors == 0 && type == undefined) {
+					layer.alert("请选择课程类型")
+					errors++;
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交课程信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/course/save", {
+							courseName: courseName,
+							courseNumber: courseNumber,
+							type: type
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "course.html"
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>课程新增页面</h1>
+
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+				<!--课程名称-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">课程名称</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入课程名称" id="courseName" />
+					</div>
+				</div>
+
+				<!--课程代码-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">课程代码</label>
+
+					<div class="layui-input-block">
+						<input type="number" class="layui-input" placeholder="请输入课程代码" id="courseNumber" />
+					</div>
+				</div>
+
+				<!--课程类型-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">课程类型</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" value="公共课" title="公共课" name="type" />
+						<input type="radio" class="layui-input" value="选修课" title="选修课" name="type" />
+						<input type="radio" class="layui-input" value="专业课" title="专业课" name="type" />
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var roleId;
+
+			$(function() {
+
+				//角色信息回显
+				loadRole();
+
+			})
+
+			//角色信息回显
+			var loadRole = function() {
+
+				$.get(baseUrl + "/role/getRole", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var role = JSON.parse(res.msg)
+
+						$("#roleName").append(role.roleName)
+
+						//初始化角色id
+						roleId = role.id
+
+						//加载表格数据
+						loadData(roleId);
+					} else {
+						back()
+					}
+
+				})
+			}
+
+			//加载表格数据
+			var loadData = function(roleId) {
+
+				//加载当前角色已授权的菜单列表
+				table.render({
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/role/findMenuList',
+					width: 1100,
+					method: 'get',
+					where: {
+						roleId: roleId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'menuName',
+							title: '菜单名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuDesc',
+							title: '菜单描述',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuPage',
+							title: '菜单页面',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuUrl',
+							title: '菜单url',
+							align: 'center' //字体居中
+						}, {
+							field: 'buttonInfo',
+							title: '按钮列表',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					]
+				});
+
+				//加载当前角色未授权的菜单列表
+				table.render({
+					elem: '#othertable', //绑定表格的id
+					url: baseUrl + '/role/findOtherMenuList',
+					width: 1100,
+					method: 'get',
+					where: {
+						roleId: roleId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'menuName',
+							title: '菜单名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuDesc',
+							title: '菜单描述',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuPage',
+							title: '菜单页面',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuUrl',
+							title: '菜单url',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#otheroperate'
+						}]
+					]
+				});
+
+			}
+
+			//已授权角色列表表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				var menu = obj.data;
+
+				//删除菜单
+				if(obj.event === 'deleteMenu') {
+
+					layer.confirm('确定为当前角色删除【' + menu.menuName + '】的这个菜单吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/role/deleteMenu", {
+							roleId: roleId,
+							menuId: menu.id
+						}, function(res) {
+
+							layer.alert(res.msg);
+
+							if(res.code == ajaxSuccess) {
+								//刷新表格信息
+								table.reload('mytable')
+								table.reload('othertable')
+							}
+						})
+
+					});
+				}
+				
+				//进入按钮授权页面
+				if(obj.event === 'setButton'){
+					
+					$.post(baseUrl + "/role/saveMenuInfo", {
+						menuId: menu.id
+					}, function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = "role_setButton.html"
+						} else {
+							layer.alert(res.msg)
+						}
+					})
+				}
+
+			});
+
+			//未授权菜单列表表格监听事件
+			table.on('tool(othertable)', function(obj) {
+
+				var menu = obj.data;
+
+				//进入新增菜单按钮选择页面
+				if(obj.event === 'addMenu') {
+
+					$.post(baseUrl + "/role/saveMenuInfo", {
+						menuId: menu.id
+					}, function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = "role_addMenu.html"
+						} else {
+							layer.alert(res.msg)
+						}
+					})
+
+				}
+
+			});
+
+			var back = function() {
+				window.location = "role.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">菜单授权页面</h1>
+
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<h1 style="margin: 50px;" id="roleName">当前角色名称：</h1>
+
+			<h1>已授权菜单列表</h1>
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="deleteMenu" name="deleteMenu">删除</button>
+				<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="setButton" name="setButton">按钮授权</button>
+			</script>
+
+			<h1>未授权菜单列表</h1>
+			<table id="othertable" lay-filter="othertable"></table>
+			<script type="text/html" id="otheroperate">
+				<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="addMenu" name="addMenu">增加该菜单</button>
+			</script>
+
+		</center>
+
+	</body>
+
+</html>

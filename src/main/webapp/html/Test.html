@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var show = function(){
+				alert(123)
+			}
+			
+			//启用按钮
+			var enable = function(){
+				
+				$("#btn").attr("disabled",false)
+				$("#btn").removeClass('layui-btn-disabled')
+			}
+			
+			//禁用按钮
+			var disable = function(){
+				
+				$("#btn").attr("disabled",true)
+				$("#btn").addClass('layui-btn-disabled')
+			}
+		</script>
+	</head>
+	<body>
+		
+		<button id="btn" class="layui-btn layui-btn-disabled" onclick="show()" disabled="disabled">按钮</button>
+		
+		<button class="layui-btn" onclick="enable()">启用</button>
+		<button class="layui-btn" onclick="disable()">禁用</button>
+		
+		
+	</body>
+</html>

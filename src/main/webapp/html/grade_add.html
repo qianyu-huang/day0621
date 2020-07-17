@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//加载学院下拉框
+				loadCollege();
+
+				//初始化表单
+				form.render();
+
+				//加载时间选择控件
+				//年选择器
+				laydate.render({
+					elem: '#enterYear',
+					type: 'year'
+				});
+
+			})
+
+			//加载学院下拉框
+			var loadCollege = function() {
+
+				$.get(baseUrl + "/college/findAll", function(collegeArray) {
+
+					for(var i = 0; i < collegeArray.length; i++) {
+						var id = collegeArray[i].id;
+						var text = collegeArray[i].collegeName + "【" + collegeArray[i].collegeCode + "】";
+						$("#collegeId").append("<option value='" + id + "'>" + text + "</option>")
+					}
+
+					//初始化表单
+					form.render();
+				})
+			}
+
+			//学院下拉框改变监听事件
+			form.on('select(collegeId)', function() {
+
+				//获取学院的id
+				var collegeId = $("#collegeId").val()
+
+				//清空专业下拉框
+				$("#majorId").empty()
+				$("#majorId").append('<option></option>')
+
+				//初始化表单
+				form.render();
+
+				//非空判定
+				if(collegeId != '') {
+					//根据学院id查询对应的所有专业
+					loadMajor(collegeId)
+				}
+			})
+
+			//加载专业下拉框
+			var loadMajor = function(collegeId) {
+
+				$.get(baseUrl + "/major/findByCollege", {
+					collegeId: collegeId
+				}, function(majorArray) {
+
+					for(var i = 0; i < majorArray.length; i++) {
+						var id = majorArray[i].id;
+						var text = majorArray[i].majorName + "【" + majorArray[i].majorCode + "】";
+						$("#majorId").append("<option value='" + id + "'>" + text + "</option>")
+					}
+
+					//初始化表单
+					form.render();
+				})
+			}
+
+			//提交班级数据
+			var sub = function() {
+
+				var collegeId = $("#collegeId").val()
+				var majorId = $("#majorId").val()
+				var enterYear = $("#enterYear").val()
+
+				var errors = 0;
+
+				//校验学院
+				if(errors == 0 && collegeId == '') {
+					layer.alert("请选择学院")
+					errors++;
+				}
+
+				//校验专业
+				if(errors == 0 && majorId == '') {
+					layer.alert("请选择专业")
+					errors++;
+				}
+
+				//校验入学年份
+				if(errors == 0 && enterYear == '') {
+					layer.alert("请选择入学年份")
+					errors++;
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交班级信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/grade/save", {
+							collegeId: collegeId,
+							majorId: majorId,
+							enterYear: enterYear
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "grade.html"
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>班级新增页面</h1>
+
+			<form class="layui-form" style="width: 300px;margin: 50px;">
+				<!--学院-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择学院</label>
+
+					<div class="layui-input-block">
+						<select id="collegeId" lay-filter="collegeId">
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<!--专业-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择专业</label>
+
+					<div class="layui-input-block">
+						<select id="majorId" lay-filter="majorId">
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<!--入学年份-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">入学年份</label>
+
+					<div class="layui-input-block">
+						<input type="text" readonly="readonly" id="enterYear" class="layui-input" />
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var userId;
+
+			$(function() {
+
+				//加载用户信息
+				loadUser()
+
+			})
+
+			//加载用户信息
+			var loadUser = function() {
+
+				$.get(baseUrl + "/access/getUserInfo", function(res) {
+
+					if(res.code == ajaxSuccess) {
+
+						var user = JSON.parse(res.msg)
+						$("#realName").append(user.realname)
+
+						//初始化用户id
+						userId = user.id
+
+						//加载角色下拉框
+						loadRole(userId);
+					} else {
+
+						window.location = "index.html"
+					}
+				})
+			}
+
+			//加载角色下拉框
+			var loadRole = function(userId) {
+
+				$.post(baseUrl + "/access/findRoleList", {
+					userId: userId
+				}, function(res) {
+
+					if(res.code == ajaxSuccess) {
+
+						var roleArray = JSON.parse(res.msg)
+
+						for(var i = 0; i < roleArray.length; i++) {
+							$("#role").append("<option value='" + roleArray[i].id + "'>" + roleArray[i].roleName + "</option>")
+						}
+
+						//表单重新渲染
+						form.render()
+
+						var roleId = $("#role").val()
+
+						//更新session中的角色信息
+						updateRole(roleId)
+
+						//加载菜单列表数据
+						loadData(roleId)
+					} else {
+
+						window.location = "index.html"
+					}
+				})
+			}
+
+			//更新session中的角色信息
+			var updateRole = function(roleId) {
+
+				$.post(baseUrl + "/access/enterMenu", {
+					roleId: roleId
+				}, function(res) {
+
+					if(res.code == ajaxFail) {
+						window.location = "index.html"
+					} 
+				})
+
+			}
+
+			//加载表格数据
+			var loadData = function(roleId) {
+
+				//加载菜单信息表格数据
+				table.render({
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/access/findMenuList',
+					width: 1100,
+					method: 'post',
+					where: {
+						roleId: roleId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'menuName',
+							title: '菜单名称',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuDesc',
+							title: '菜单描述',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuPage',
+							title: '菜单页面',
+							align: 'center' //字体居中
+						}, {
+							field: 'menuUrl',
+							title: '菜单url',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					]
+				});
+			}
+
+			//角色下拉框监听事件
+			form.on('select(role)', function(data) {
+
+				var roleId = $("#role").val()
+
+				//加载菜单列表数据
+				loadData(roleId)
+
+				//更新session中的角色信息
+				updateRole(roleId)
+			});
+
+			//表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				var menu = obj.data;
+
+				var roleId = $("#role").val()
+				//进入菜单
+				if(obj.event === 'enterMenu') {
+
+					$.post(baseUrl + "/access/enterMenu", {
+						roleId: roleId
+					}, function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = menu.menuPage
+						} else {
+
+							layer.alert(res.msg)
+						}
+					})
+
+				}
+
+			});
+
+			//退出系统
+			var exit = function() {
+
+				layer.confirm('确认退出系统吗？', {
+					icon: 3,
+					title: '提示'
+				}, function(index) {
+
+					$.post(baseUrl + "/access/exit", function(res) {
+
+						if(res.code == ajaxSuccess) {
+							window.location = "index.html"
+						} else {
+							layer.alert(res.msg)
+						}
+
+					})
+
+				});
+			}
+
+			//进入修改密码页面
+			var changePassword = function() {
+				window.location = "changePassword.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<button class="layui-btn layui-btn-danger" onclick="exit()" style="position: fixed;right: 100px;">退出系统</button>
+			<button class="layui-btn layui-btn-normal" onclick="changePassword()" style="position: fixed;right: 100px;top: 200px;">修改密码</button>
+
+			<h1 style="margin: 100px">权限控制系统主页面</h1>
+
+			<h1 id="realName" style="margin: 50px;">当前用户名称：</h1>
+
+			<form class="layui-form" style="width: 300px;margin: 50px;">
+				<!--角色下拉框-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择角色</label>
+
+					<div class="layui-input-block">
+						<select id="role" lay-filter="role">
+						</select>
+					</div>
+				</div>
+
+			</form>
+
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button class="layui-btn layui-btn-warm layui-btn-xs" lay-event="enterMenu" name="enterMenu">进入菜单</button>
+			</script>
+		</center>
+
+	</body>
+
+</html>

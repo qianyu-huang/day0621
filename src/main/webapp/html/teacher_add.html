@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//初始化班级下拉框
+				loadGrade();
+
+				//初始化表单
+				form.render();
+
+			})
+
+			//初始化班级下拉框
+			var loadGrade = function() {
+
+				$.get(baseUrl + "/grade/findAll", function(gradeArray) {
+
+					for(var i = 0; i < gradeArray.length; i++) {
+						var id = gradeArray[i].id;
+						var text = gradeArray[i].className + "【" + gradeArray[i].classCode + "】";
+						$("#gradeId").append("<option value='" + id + "'>" + text + "</option>")
+					}
+
+					//初始化表单
+					form.render();
+				})
+			}
+
+			//提交讲师数据
+			var sub = function() {
+
+				var teacherName = $("#teacherName").val()
+
+				var sex = $("[name='sex']:checked").val()
+				var phoneNumber = $("#phoneNumber").val()
+				var title = $("[name='title']:checked").val()
+				var gradeId = $("#gradeId").val()
+
+				var errors = 0;
+
+				//校验讲师姓名
+				if(teacherName == '') {
+					layer.alert("请输入讲师姓名")
+					errors++;
+				} else {
+
+					if(teacherName.length < 2 || teacherName.length > 4) {
+						layer.alert("讲师姓名只能为2-4位，请重新输入")
+						errors++;
+					}
+				}
+
+				//校验性别
+				if(errors == 0 && sex == undefined) {
+					layer.alert("请选择性别")
+					errors++;
+				}
+
+				//校验手机号
+				if(errors == 0) {
+
+					if(phoneNumber == '') {
+						layer.alert("请输入手机号码")
+						errors++;
+
+					} else {
+
+						//校验手机格式
+						var regex = /^1\d{10}$/
+						if(regex.test(phoneNumber) == false) {
+
+							layer.alert("手机号码只能为11位数字，并且必须以1开头")
+							errors++;
+						}
+
+					}
+
+				}
+
+				//校验职称
+				if(errors == 0 && title == undefined) {
+					layer.alert("请选择职称")
+					errors++;
+				}
+
+				//校验班级
+				if(errors == 0 && gradeId == '') {
+					layer.alert("请选择班级")
+					errors++;
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交讲师信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/teacher/save", {
+							teacherName: teacherName,
+							sex: sex,
+							phoneNumber: phoneNumber,
+							title: title,
+							gradeId: gradeId
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "teacher.html"
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>讲师新增页面</h1>
+
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+				<!--讲师姓名-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">讲师姓名</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入讲师姓名" id="teacherName" />
+					</div>
+				</div>
+
+				<!--性别-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">性别</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" name="sex" value="男" title="男" />
+						<input type="radio" class="layui-input" name="sex" value="女" title="女" />
+					</div>
+				</div>
+
+				<!--手机号码-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">手机号码</label>
+
+					<div class="layui-input-block">
+						<input type="number" class="layui-input" placeholder="请输入手机号码" id="phoneNumber" />
+					</div>
+				</div>
+
+				<!--讲师职称-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">讲师职称</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" value="助教" title="助教" name="title" />
+						<input type="radio" class="layui-input" value="讲师" title="讲师" name="title" />
+						<input type="radio" class="layui-input" value="副教授" title="副教授" name="title" />
+						<input type="radio" class="layui-input" value="教授" title="教授" name="title" />
+					</div>
+				</div>
+
+				<!--选择班级-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择班级</label>
+
+					<div class="layui-input-block">
+						<select id="gradeId" lay-search>
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>

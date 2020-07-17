@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lening.mapper.MenuMapper">
+  <resultMap id="BaseResultMap" type="com.lening.pojo.Menu">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+    <result column="menu_desc" jdbcType="VARCHAR" property="menuDesc" />
+    <result column="menu_page" jdbcType="VARCHAR" property="menuPage" />
+    <result column="menu_url" jdbcType="VARCHAR" property="menuUrl" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, menu_name, menu_desc, menu_page, menu_url
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from menu
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 菜单全查 -->
+   <select id="findAll" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from menu
+  </select>
+  
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from menu
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.lening.pojo.Menu">
+    insert into menu (id, menu_name, menu_desc, 
+      menu_page, menu_url)
+    values (#{id,jdbcType=INTEGER}, #{menuName,jdbcType=VARCHAR}, #{menuDesc,jdbcType=VARCHAR}, 
+      #{menuPage,jdbcType=VARCHAR}, #{menuUrl,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.lening.pojo.Menu">
+    insert into menu
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="menuName != null">
+        menu_name,
+      </if>
+      <if test="menuDesc != null">
+        menu_desc,
+      </if>
+      <if test="menuPage != null">
+        menu_page,
+      </if>
+      <if test="menuUrl != null">
+        menu_url,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="menuName != null">
+        #{menuName,jdbcType=VARCHAR},
+      </if>
+      <if test="menuDesc != null">
+        #{menuDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="menuPage != null">
+        #{menuPage,jdbcType=VARCHAR},
+      </if>
+      <if test="menuUrl != null">
+        #{menuUrl,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.lening.pojo.Menu">
+    update menu
+    <set>
+      <if test="menuName != null">
+        menu_name = #{menuName,jdbcType=VARCHAR},
+      </if>
+      <if test="menuDesc != null">
+        menu_desc = #{menuDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="menuPage != null">
+        menu_page = #{menuPage,jdbcType=VARCHAR},
+      </if>
+      <if test="menuUrl != null">
+        menu_url = #{menuUrl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lening.pojo.Menu">
+    update menu
+    set menu_name = #{menuName,jdbcType=VARCHAR},
+      menu_desc = #{menuDesc,jdbcType=VARCHAR},
+      menu_page = #{menuPage,jdbcType=VARCHAR},
+      menu_url = #{menuUrl,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

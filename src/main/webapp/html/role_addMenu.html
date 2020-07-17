@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			var roleId;
+			var menuId;
+			var roleName;
+			var menuName;
+
+			$(function() {
+
+				//回显当前角色和当前菜单
+				loadRoleAndMenu();
+
+				//加载按钮信息表格数据
+				loadData();
+
+			})
+
+			//回显当前角色和当前菜单
+			var loadRoleAndMenu = function() {
+
+				//回显角色
+				$.get(baseUrl + "/role/getRole", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var role = JSON.parse(res.msg)
+
+						$("#roleName").append(role.roleName)
+
+						//初始化角色id
+						roleId = role.id
+
+						roleName = role.roleName
+					} else {
+						back()
+					}
+
+				})
+
+				//回显菜单
+				$.get(baseUrl + "/role/getMenu", function(res) {
+
+					if(res.code == ajaxSuccess) {
+						var menu = JSON.parse(res.msg)
+
+						$("#menuName").append(menu.menuName)
+
+						//初始化菜单id
+						menuId = menu.id
+
+						menuName = menu.menuName
+					} else {
+						back()
+					}
+
+				})
+
+			}
+
+			//加载表格数据
+			var loadData = function(buttonArray) {
+
+				//加载按钮信息表格数据
+				table.render({
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/button/findAll',
+					width: 1100,
+					method: 'get',
+					cols: [
+						[{
+								fixed: 'left',
+								type: 'checkbox'
+							},
+							{
+								title: '序号',
+								width: 60,
+								type: 'numbers',
+								fixed: 'left'
+							}, {
+								field: 'buttonName',
+								title: '按钮名称',
+								align: 'center' //字体居中
+							}, {
+								field: 'attrName',
+								title: '属性名称',
+								align: 'center' //字体居中
+							}, {
+								field: 'buttonUrl',
+								title: '按钮url',
+								align: 'center' //字体居中
+							}
+						]
+					]
+				});
+			}
+
+			//完成菜单新增
+			var addMenu = function() {
+
+				//获取所有选择的按钮
+				var checkStatus = table.checkStatus('mytable');
+				var buttonArray = checkStatus.data; //获取的是一个json数组，存放所有选中的数据
+
+				if(buttonArray.length == 0) {
+					layer.alert("请先选择按钮，再完成菜单新增操作")
+				} else {
+					var buttonIds = "";
+					var buttonNames = "";
+
+					for(var i = 0; i < buttonArray.length; i++) {
+						buttonIds = buttonIds + buttonArray[i].id + ","
+						buttonNames = buttonNames + buttonArray[i].buttonName + ","
+					}
+
+					//去掉末尾逗号
+					buttonIds = buttonIds.substr(0, buttonIds.length - 1)
+					buttonNames = buttonNames.substr(0, buttonNames.length - 1)
+
+					layer.confirm('确定为当前角色【' + roleName + '】增加【' + menuName + '】这个菜单的访问权限，并且分配【' + buttonNames + '】按钮权限吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+						
+						$.post(baseUrl+"/role/addMenu",{
+							roleId:roleId,
+							menuId:menuId,
+							buttonIds:buttonIds
+						},function(res){
+							
+							if(res.code == ajaxSuccess){
+								layer.alert(res.msg,function(){
+									back()
+								})
+							}else{
+								layer.alert(res.msg)
+							}
+						})
+						
+					});
+				}
+			}
+
+			//返回
+			var back = function() {
+
+				window.location = "role_setMenu.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">新增菜单按钮选择页面</h1>
+
+			<button class="layui-btn" type="button" onclick="addMenu()" name="addMenu">完成菜单新增</button>
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<h1 id="roleName">当前角色名称：</h1>
+			<h1 id="menuName">当前菜单名称：</h1>
+
+			<table id="mytable" lay-filter="mytable"></table>
+		</center>
+
+	</body>
+
+</html>

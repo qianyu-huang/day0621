@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//加载楼号，楼号限制为1-10
+				loadNumber()
+
+				//加载楼层号，楼层号限制为1-5
+				loadFloor()
+
+				//初始化表单
+				form.render();
+
+			})
+
+			//加载楼号，楼号限制为1-9
+			var loadNumber = function() {
+
+				for(var i = 1; i <= 9; i++) {
+					$("#number").append("<option value='" + i + "'>" + i + "号楼</option>")
+				}
+			}
+
+			//加载楼层号，楼层号限制为1-5
+			var loadFloor = function() {
+
+				for(var i = 1; i <= 5; i++) {
+					$("#floor").append("<option value='" + i + "'>第" + i + "层</option>")
+				}
+			}
+
+			//提交宿舍数据
+			var sub = function() {
+
+				var number = $("#number").val()
+				var floor = $("#floor").val()
+				var name = $("#name").val()
+				var type = $(":radio:checked").val()
+
+				//				var type;
+				//				var typeArray = $("[name='type']");
+				//				for(var i = 0; i < typeArray.length; i++) {
+				//					if(typeArray[i].checked == true) {
+				//						type = typeArray[i].value
+				//					}
+				//				}
+
+				var errors = 0;
+
+				//校验楼号
+				if(errors == 0 && number == '') {
+					layer.alert("请选择楼号")
+					errors++;
+				}
+
+				//校验楼层号
+				if(errors == 0 && floor == '') {
+					layer.alert("请选择楼层号")
+					errors++;
+				}
+
+				//校验宿舍号
+				if(errors == 0) {
+
+					if(name == '') {
+						layer.alert("请输入宿舍号")
+						errors++;
+					} else {
+
+						if(name.length != 3) {
+							layer.alert("宿舍号只能为3位数字，请重新输入")
+							errors++;
+						} else {
+
+							//楼层号和第一位数字保持一致
+							if(name.substr(0, 1) != floor) {
+
+								layer.alert("宿舍号第一位数字要和楼层号保持一致，请重新输入")
+								errors++;
+							}
+						}
+					}
+
+				}
+
+				//校验宿舍类型
+				if(errors == 0 && type == undefined) {
+					layer.alert("请选择宿舍类型")
+					errors++;
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交宿舍信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/dormitory/save", {
+							number: number,
+							floor: floor,
+							name: name,
+							type: type
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "dormitory.html"
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>宿舍新增页面</h1>
+
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+
+				<!--楼号-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择楼号</label>
+
+					<div class="layui-input-block">
+						<select id="number">
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<!--楼层号-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择楼层</label>
+
+					<div class="layui-input-block">
+						<select id="floor">
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<!--宿舍号-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">宿舍号</label>
+
+					<div class="layui-input-block">
+						<input type="number" class="layui-input" placeholder="请输入宿舍号" id="name" />
+					</div>
+				</div>
+
+				<!--宿舍类型-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">宿舍类型</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" value="四人间" title="四人间" name="type" />
+						<input type="radio" class="layui-input" value="六人间" title="六人间" name="type" />
+						<input type="radio" class="layui-input" value="八人间" title="八人间" name="type" />
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>

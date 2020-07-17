@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//加载学生信息表格数据
+				loadData();
+
+				//初始化班级下拉框
+				loadGrade();
+
+			})
+
+			//初始化班级下拉框
+			var loadGrade = function() {
+
+				$.get(baseUrl + "/grade/findAll", function(gradeArray) {
+
+					for(var i = 0; i < gradeArray.length; i++) {
+						var id = gradeArray[i].id;
+						var text = gradeArray[i].className + "【" + gradeArray[i].classCode + "】";
+						$("#gradeId").append("<option value='" + id + "'>" + text + "</option>")
+					}
+
+					//初始化表单
+					form.render();
+				})
+			}
+
+			//加载表格数据
+			var loadData = function(buttonArray) {
+
+				//获取查询条件
+				var studentName = $("#studentName").val()
+				var sex = $(":radio:checked").val()
+				var gradeId = $("#gradeId").val()
+
+				//加载学生信息表格数据
+				table.render({
+					done:function () {
+						//获取按钮权限
+						getButtonList()
+					},
+					elem: '#mytable', //绑定表格的id
+					url: baseUrl + '/student/findByCase',
+					width: 1100,
+					method: 'get',
+					where: {
+						studentName: studentName,
+						sex: sex,
+						gradeId: gradeId
+					},
+					cols: [
+						[{
+							title: '序号',
+							width: 60,
+							type: 'numbers',
+							fixed: 'left'
+						}, {
+							field: 'studentNumber',
+							title: '学生学号',
+							align: 'center' //字体居中
+						}, {
+							field: 'studentName',
+							title: '学生姓名',
+							align: 'center' //字体居中
+						}, {
+							field: 'sex',
+							title: '学生性别',
+							align: 'center' //字体居中
+						}, {
+							field: 'hobby',
+							title: '学生爱好',
+							align: 'center' //字体居中
+						}, {
+							field: 'className',
+							title: '班级名称',
+							align: 'center' //字体居中
+						}, {
+							width: 250,
+							align: 'center',
+							fixed: 'right',
+							title: '操作',
+							toolbar: '#myoperate'
+						}]
+					],
+					limits: [5, 10], //每页条数的选择项，默认：[10,20,30,40,50,60,70,80,90]。
+					limit: 5, //每页显示的条数（默认：10）。值务必对应 limits 参数的选项。 
+					page: true //是否开启分页
+				});
+			}
+
+			//进入新增学生页面
+			var add = function() {
+
+				window.location = "student_add.html"
+			}
+
+			//表格监听事件
+			table.on('tool(mytable)', function(obj) {
+
+				//修改操作
+				if(obj.event === 'update') {
+					layer.alert("学生管理-修改操作");
+				}
+
+				//删除操作
+				if(obj.event === 'delete') {
+					layer.alert("学生管理-单条删除");
+				}
+
+			});
+			
+			//返回主页面
+			var back = function(){
+				window.location = "main.html"
+			}
+		</script>
+
+	</head>
+
+	<body>
+
+		<center>
+
+			<h1 style="margin: 100px">学生管理页面</h1>
+
+			<button disabled="disabled" class="layui-btn-disabled layui-btn" type="button" onclick="add()" name="save">新增</button>
+			<button class="layui-btn layui-btn-warm" type="button" onclick="back()">返回</button>
+
+			<!--
+            	作者：offline
+            	时间：2020-06-28
+            	描述：多条件查询
+            -->
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+				<!--学生姓名-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">学生姓名</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" id="studentName" />
+					</div>
+				</div>
+
+				<!--性别-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">性别</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" name="sex" value="男" title="男" />
+						<input type="radio" class="layui-input" name="sex" value="女" title="女" />
+					</div>
+				</div>
+
+				<!--选择班级-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">选择班级</label>
+
+					<div class="layui-input-block">
+						<select id="gradeId" lay-search>
+							<option></option>
+						</select>
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<input disabled="disabled" type="button" class="layui-btn-disabled layui-btn" onclick="loadData()" value="查询" name="query" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+				</div>
+			</form>
+
+			<table id="mytable" lay-filter="mytable"></table>
+			<script type="text/html" id="myoperate">
+				<button disabled="disabled" class="layui-btn-disabled layui-btn layui-btn-warm layui-btn-xs" lay-event="update" name="update">修改</button>
+				<button disabled="disabled" class="layui-btn-disabled layui-btn layui-btn-danger layui-btn-xs" lay-event="delete" name="delete">删除</button>
+			</script>
+		</center>
+
+
+	</body>
+
+</html>

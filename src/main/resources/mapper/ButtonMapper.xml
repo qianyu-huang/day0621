@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lening.mapper.ButtonMapper">
+  <resultMap id="BaseResultMap" type="com.lening.pojo.Button">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="button_name" jdbcType="VARCHAR" property="buttonName" />
+    <result column="attr_name" jdbcType="VARCHAR" property="attrName" />
+    <result column="button_url" jdbcType="VARCHAR" property="buttonUrl" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, button_name, attr_name, button_url
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from button
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 按钮全查 -->
+   <select id="findAll" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from button
+  </select>
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from button
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.lening.pojo.Button">
+    insert into button (id, button_name, attr_name, 
+      button_url)
+    values (#{id,jdbcType=INTEGER}, #{buttonName,jdbcType=VARCHAR}, #{attrName,jdbcType=VARCHAR}, 
+      #{buttonUrl,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.lening.pojo.Button">
+    insert into button
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="buttonName != null">
+        button_name,
+      </if>
+      <if test="attrName != null">
+        attr_name,
+      </if>
+      <if test="buttonUrl != null">
+        button_url,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="buttonName != null">
+        #{buttonName,jdbcType=VARCHAR},
+      </if>
+      <if test="attrName != null">
+        #{attrName,jdbcType=VARCHAR},
+      </if>
+      <if test="buttonUrl != null">
+        #{buttonUrl,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.lening.pojo.Button">
+    update button
+    <set>
+      <if test="buttonName != null">
+        button_name = #{buttonName,jdbcType=VARCHAR},
+      </if>
+      <if test="attrName != null">
+        attr_name = #{attrName,jdbcType=VARCHAR},
+      </if>
+      <if test="buttonUrl != null">
+        button_url = #{buttonUrl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lening.pojo.Button">
+    update button
+    set button_name = #{buttonName,jdbcType=VARCHAR},
+      attr_name = #{attrName,jdbcType=VARCHAR},
+      button_url = #{buttonUrl,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

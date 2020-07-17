@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lening.mapper.RoleMapper">
+  <resultMap id="BaseResultMap" type="com.lening.pojo.Role">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="role_desc" jdbcType="VARCHAR" property="roleDesc" />
+  </resultMap>
+  
+  <!-- RoleVo -->
+  <resultMap id="RoleVo" type="com.lening.vo.RoleVo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="role_desc" jdbcType="VARCHAR" property="roleDesc" />
+    
+    <result column="menuInfo" jdbcType="VARCHAR" property="menuInfo" />
+  </resultMap>
+  
+  <!-- MenuVo -->
+  <resultMap id="MenuVo" type="com.lening.vo.MenuVo">
+   <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+    <result column="menu_desc" jdbcType="VARCHAR" property="menuDesc" />
+    <result column="menu_page" jdbcType="VARCHAR" property="menuPage" />
+    <result column="menu_url" jdbcType="VARCHAR" property="menuUrl" />
+    
+    <result column="buttonInfo" jdbcType="VARCHAR" property="buttonInfo" />
+  </resultMap>
+  
+  <!-- Menu -->
+  <resultMap id="Menu" type="com.lening.pojo.Menu">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+    <result column="menu_desc" jdbcType="VARCHAR" property="menuDesc" />
+    <result column="menu_page" jdbcType="VARCHAR" property="menuPage" />
+    <result column="menu_url" jdbcType="VARCHAR" property="menuUrl" />
+  </resultMap>
+  
+  <!-- Button -->
+  <resultMap id="Button" type="com.lening.pojo.Button">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="button_name" jdbcType="VARCHAR" property="buttonName" />
+    <result column="attr_name" jdbcType="VARCHAR" property="attrName" />
+    <result column="button_url" jdbcType="VARCHAR" property="buttonUrl" />
+  </resultMap>
+  
+  
+  <sql id="Base_Column_List">
+    id, role_name, role_desc
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from role
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 根据角色名称查询单条记录 -->
+  <select id="findByName" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from role
+    where role_name = #{roleName,jdbcType=INTEGER}
+  </select>
+  
+  
+  <!-- 查询角色详细信息 -->
+   <select id="findVo" resultMap="RoleVo">
+    SELECT
+		r.*,GROUP_CONCAT(DISTINCT m.menu_name) menuInfo
+	FROM
+		role r
+	LEFT JOIN role_menu_button rmb ON r.id = rmb.role_id
+	LEFT JOIN menu m ON rmb.menu_id = m.id
+	GROUP BY r.id
+  </select>
+  
+  <!-- 根据角色查询已授权的菜单列表 -->
+  <select id="findMenuList" resultMap="MenuVo">
+  SELECT
+	m.*, GROUP_CONCAT(b.button_name) buttonInfo
+	FROM
+		role_menu_button rmb
+	LEFT JOIN menu m ON rmb.menu_id = m.id
+	LEFT JOIN button b on rmb.button_id = b.id
+	WHERE rmb.role_id = #{roleId}
+	GROUP BY rmb.menu_id
+  </select>
+  
+  <!-- 根据角色查询未授权的菜单列表 -->
+  <select id="findOtherMenuList" resultMap="Menu">
+  SELECT
+		*
+	FROM
+		menu
+	WHERE
+		id NOT IN (
+			SELECT
+				m.id
+			FROM
+				role_menu_button rmb
+			LEFT JOIN menu m ON rmb.menu_id = m.id
+			LEFT JOIN button b ON rmb.button_id = b.id
+			WHERE
+				rmb.role_id = #{roleId}
+			GROUP BY
+				rmb.menu_id
+		)
+  </select>
+  
+  <!-- 根据角色id和菜单id查询已授权的按钮列表 -->
+  <select id="findButtonList" resultMap="Button">
+  	SELECT
+		b.*
+	FROM
+		role_menu_button rmb
+	LEFT JOIN button b ON rmb.button_id = b.id
+	WHERE
+		rmb.role_id = #{roleId}
+	AND rmb.menu_id = #{menuId}
+  </select>
+  
+   <!-- 根据角色id和菜单id查询未授权的按钮列表 -->
+  <select id="findOtherButtonList" resultMap="Button">
+  SELECT
+		*
+	FROM
+		button
+	WHERE
+		id NOT IN (
+			SELECT
+				b.id
+			FROM
+				role_menu_button rmb
+			LEFT JOIN button b ON rmb.button_id = b.id
+			WHERE
+				rmb.role_id = #{roleId}
+			AND rmb.menu_id = #{menuId}
+		)
+  </select>
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from role
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.lening.pojo.Role">
+    insert into role (id, role_name, role_desc
+      )
+    values (#{id,jdbcType=INTEGER}, #{roleName,jdbcType=VARCHAR}, #{roleDesc,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.lening.pojo.Role">
+    insert into role
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="roleName != null">
+        role_name,
+      </if>
+      <if test="roleDesc != null">
+        role_desc,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="roleName != null">
+        #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleDesc != null">
+        #{roleDesc,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.lening.pojo.Role">
+    update role
+    <set>
+      <if test="roleName != null">
+        role_name = #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleDesc != null">
+        role_desc = #{roleDesc,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.lening.pojo.Role">
+    update role
+    set role_name = #{roleName,jdbcType=VARCHAR},
+      role_desc = #{roleDesc,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

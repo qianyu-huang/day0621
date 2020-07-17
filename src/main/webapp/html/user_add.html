@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css" />
+		<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+		<script src="layui/layui.all.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(function() {
+
+				//初始化表单
+				form.render();
+
+			})
+
+			//提交用户数据
+			var sub = function() {
+
+				var username = $("#username").val()
+				var realname = $("#realname").val()
+
+				var sex = $(":radio:checked").val()
+
+				var errors = 0;
+
+				//校验用户名
+				if(errors == 0 && username == '') {
+					layer.alert("请输入用户名")
+					errors++;
+				}
+
+				//校验真实姓名
+				if(errors == 0) {
+
+					if(realname == '') {
+						layer.alert("请输入真实姓名")
+						errors++;
+					} else {
+
+						if(realname.length < 2 || realname.length > 4) {
+
+							layer.alert("真实姓名只能为2-4位，请重新输入")
+							errors++;
+						}
+					}
+
+				}
+
+				//校验性别
+				if(errors == 0 && sex == undefined) {
+
+					layer.alert("请选择性别")
+					errors++;
+				}
+
+				if(errors == 0) {
+
+					layer.confirm('确认提交用户信息吗？', {
+						icon: 3,
+						title: '提示'
+					}, function(index) {
+
+						$.post(baseUrl + "/user/save", {
+							username: username,
+							realname: realname,
+							sex:sex
+						}, function(res) {
+
+							if(res.code == ajaxSuccess) {
+
+								layer.alert(res.msg, function() {
+									back()
+								})
+							} else {
+								layer.alert(res.msg)
+							}
+						})
+					});
+
+				}
+
+			}
+
+			//返回
+			var back = function() {
+				window.location = "user.html"
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<center style="margin: 50px;">
+			<h1>用户新增页面</h1>
+
+			<form class="layui-form" style="width: 500px;margin: 50px;">
+				<!--用户名-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">用户名</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入用户名" id="username" />
+					</div>
+				</div>
+
+				<!--用户姓名-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">用户姓名</label>
+
+					<div class="layui-input-block">
+						<input type="text" class="layui-input" placeholder="请输入用户姓名" id="realname" />
+					</div>
+				</div>
+
+				<!--用户性别-->
+				<div class="layui-form-item">
+					<label class="layui-form-label">用户性别</label>
+
+					<div class="layui-input-block">
+						<input type="radio" class="layui-input" name="sex" value="男" title="男" />
+						<input type="radio" class="layui-input" name="sex" value="女" title="女" />
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+
+					<input type="button" class="layui-btn" onclick="sub()" value="提交" />
+					<input type="reset" class="layui-btn layui-btn-normal" value="重置" />
+					<input type="button" class="layui-btn layui-btn-warm" value="返回" onclick="back()" />
+				</div>
+			</form>
+
+		</center>
+
+	</body>
+
+</html>
